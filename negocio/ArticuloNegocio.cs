@@ -22,7 +22,7 @@ namespace negocio
                 
                 conexion.ConnectionString = "server=.\\SQLEXPRESS; database=CATALOGO_DB; integrated security=true";
                 comando.CommandType = System.Data.CommandType.Text;
-                comando.CommandText = "select Codigo, Nombre, A.Descripcion, ImagenUrl, Precio, M.Descripcion Marca, C.Descripcion Categoria from ARTICULOS A, MARCAS M, CATEGORIAS C where M.Id = A.IdMarca and C.Id = A.IdCategoria";
+                comando.CommandText = "select Codigo, Nombre, A.Descripcion, ImagenUrl, Precio, M.Descripcion Marca, C.Descripcion Categoria, A.IdMarca, A.IdCategoria, A.Id from ARTICULOS A, MARCAS M, CATEGORIAS C where M.Id = A.IdMarca and C.Id = A.IdCategoria";
                 comando.Connection = conexion;
 
                 conexion.Open();
@@ -31,6 +31,7 @@ namespace negocio
                 while (lector.Read())
                 {
                     Articulo aux = new Articulo();
+                    aux.Id = (int)lector["Id"];
                     aux.Codigo = (string) lector["Codigo"];
                     aux.Nombre = (string)lector["Nombre"];
                     aux.Descripcion = (string)lector["Descripcion"];
@@ -38,9 +39,11 @@ namespace negocio
                     aux.Precio = (decimal)lector["Precio"];
 
                     aux.Marca = new Marca();
+                    aux.Marca.Id = (int)lector["IdMarca"];
                     aux.Marca.Descripcion = (string)lector["Marca"];
 
                     aux.Categoria = new Categoria();
+                    aux.Categoria.Id = (int)lector["IdCategoria"];
                     aux.Categoria.Descripcion = (string)lector["Categoria"];
 
                     lista.Add(aux);
@@ -84,6 +87,53 @@ namespace negocio
                 datos.CerrarConexion();
             }
 
+        }
+        public void Modificar(Articulo articulo)
+        {
+            AccesoDatos datos = new AccesoDatos();
+            try
+            {
+            datos.SetearConsulta("update ARTICULOS set Codigo = @Codigo, Nombre = @Nombre, Descripcion = @Descripcion, ImagenUrl = @ImagenUrl, Precio = @Precio, IdMarca = @IdMarca, IdCategoria = @IdCategoria where Id = @Id");
+            datos.SetearParametro("@Codigo", articulo.Codigo);
+            datos.SetearParametro("@Nombre", articulo.Nombre);
+            datos.SetearParametro("@Descripcion", articulo.Descripcion);
+            datos.SetearParametro("@ImagenUrl", articulo.UrlImagen);
+            datos.SetearParametro("@Precio", articulo.Precio);
+            datos.SetearParametro("@IdMarca", articulo.Marca.Id);
+            datos.SetearParametro("@IdCategoria", articulo.Categoria.Id);
+            datos.SetearParametro("@Id", articulo.Id);
+
+            datos.EjecutarAccion();
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+            finally
+            {
+                datos.CerrarConexion();
+            }
+        }
+
+        public void Eliminar(int id)
+           
+        {
+            try
+            {
+            AccesoDatos datos = new AccesoDatos();
+            datos.SetearConsulta("Delete from ARTICULOS where Id = @Id");
+            datos.SetearParametro("@Id", id);
+            datos.EjecutarAccion();
+
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
         }
     }
 }

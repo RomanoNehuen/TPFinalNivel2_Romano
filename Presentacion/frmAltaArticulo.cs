@@ -14,9 +14,17 @@ namespace Presentacion
 {
     public partial class frmAltaArticulo : Form
     {
+        private Articulo articulo = null;
         public frmAltaArticulo()
         {
             InitializeComponent();
+        }
+
+        public frmAltaArticulo(Articulo articulo)
+        {
+            InitializeComponent();
+            this.articulo = articulo;
+            Text = "Modificar Artículo";
         }
 
         private void btnCancelar_Click(object sender, EventArgs e)
@@ -26,20 +34,38 @@ namespace Presentacion
 
         private void btnAceptar_Click(object sender, EventArgs e)
         {
-            Articulo nuevo = new Articulo();
+          
             ArticuloNegocio negocio = new ArticuloNegocio();
+           
             try
-            {
-                nuevo.Codigo = txtCodigo.Text;
-                nuevo.Nombre = txtNombre.Text;
-                nuevo.Descripcion = TxtDescripcion.Text;
-                nuevo.UrlImagen = txtUrlImagen.Text;
-                nuevo.Precio = decimal.Parse(txtPrecio.Text);
-                nuevo.Marca = (Marca)cboMarca.SelectedItem;
-                nuevo.Categoria = (Categoria)cboCategoria.SelectedItem;
+            {             
+                if(articulo == null)
+                
+                {
+                articulo = new Articulo();
 
-                negocio.agregar(nuevo);
-                MessageBox.Show("Agregado exitosamente");
+                articulo.Codigo = txtCodigo.Text;
+                articulo.Nombre = txtNombre.Text;
+                articulo. Descripcion = TxtDescripcion.Text;
+                articulo.UrlImagen = txtUrlImagen.Text;
+                articulo.Precio = decimal.Parse(txtPrecio.Text);
+                articulo.Marca = (Marca)cboMarca.SelectedItem;
+                articulo.Categoria = (Categoria)cboCategoria.SelectedItem;
+
+                }
+                            
+                if(articulo.Id != 0)
+                {
+                    negocio.Modificar(articulo);
+                    MessageBox.Show("Modificado Exitosamente");
+                }
+                else
+                {
+                    negocio.agregar(articulo);
+                    MessageBox.Show("Agregado exitosamente");
+
+                }
+
                 Close();
 
 
@@ -59,13 +85,50 @@ namespace Presentacion
             try
             {
                 cboMarca.DataSource = marcanegocio.listar();
+                cboMarca.ValueMember = "Id";
+                cboMarca.DisplayMember = "Descripcion";
                 cboCategoria.DataSource = categorianegocio.listar();
+                cboCategoria.ValueMember = "Id";
+                cboCategoria.DisplayMember = "Descripcion";
+
+                if(articulo != null)
+                {
+                    txtCodigo.Text = articulo.Codigo.ToString();
+                    txtNombre.Text = articulo.Nombre;
+                    txtPrecio.Text = articulo.Precio.ToString("0.00");
+                    TxtDescripcion.Text = articulo.Descripcion;
+                    txtUrlImagen.Text = articulo.UrlImagen;
+                    CargarImagen(articulo.UrlImagen);
+                    
+                    cboMarca.SelectedValue = articulo.Marca.Id;
+                    cboCategoria.SelectedValue = articulo.Categoria.Id;
+
+                }
             }
             catch (Exception ex)
             {
 
                 throw ex;
             }
+        }
+
+        private void CargarImagen(string imagen)
+
+        {
+            try
+            {
+                pbxNuevaImagen.Load(imagen);
+            }
+            catch (Exception)
+            {
+
+                pbxNuevaImagen.Load("https://img.freepik.com/vector-premium/icono-marco-fotos-foto-vacia-blanco-vector-sobre-fondo-transparente-aislado-eps-10_399089-1290.jpg");
+            }
+        }
+
+        private void txtUrlImagen_Leave(object sender, EventArgs e)
+        {
+            CargarImagen(txtUrlImagen.Text);
         }
     }
 }

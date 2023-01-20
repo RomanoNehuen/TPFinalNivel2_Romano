@@ -22,20 +22,44 @@ namespace Presentacion
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            ArticuloNegocio negocio = new ArticuloNegocio();
-            listaArticulos = negocio.listar();
-            dgvArticulos.DataSource = listaArticulos;
-            OcultarColumnas();
-            pbxArticulos.Load(listaArticulos[0].UrlImagen);
+            Cargardgv();
            
         }
 
         private void dgvArticulos_SelectionChanged(object sender, EventArgs e)
         {
-            Articulo Seleccionado = (Articulo)dgvArticulos.CurrentRow.DataBoundItem;
-            CargarImagen(Seleccionado.UrlImagen);
-        }
+            try
+            {
+                if(dgvArticulos.CurrentRow != null)
+                {
+                    Articulo Seleccionado = (Articulo)dgvArticulos.CurrentRow.DataBoundItem;
+                    CargarImagen(Seleccionado.UrlImagen);
 
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+        private void Cargardgv()
+        {
+            try
+            {
+                ArticuloNegocio negocio = new ArticuloNegocio();
+                listaArticulos = negocio.listar();
+                dgvArticulos.DataSource = listaArticulos;
+                OcultarColumnas();
+                pbxArticulos.Load(listaArticulos[0].UrlImagen);
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.ToString());
+            }
+        }
         private void CargarImagen(string imagen)
 
         {
@@ -50,7 +74,6 @@ namespace Presentacion
             }
 
            
-           
         }
         private void OcultarColumnas()
         {
@@ -62,6 +85,63 @@ namespace Presentacion
         {
             frmAltaArticulo alta = new frmAltaArticulo();
             alta.ShowDialog();
+            Cargardgv();
+        }
+
+        private void btnModificar_Click(object sender, EventArgs e)
+        {
+            Articulo seleccionado = new Articulo();
+            seleccionado = (Articulo)dgvArticulos.CurrentRow.DataBoundItem;
+            frmAltaArticulo modificar = new frmAltaArticulo(seleccionado);
+            modificar.ShowDialog();
+            Cargardgv();
+        }
+
+        private void dgvArticulos_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void btnEliminar_Click(object sender, EventArgs e)
+        {
+            ArticuloNegocio ArticuloEliminado = new ArticuloNegocio();
+            Articulo seleccionado;
+            try
+            {
+                DialogResult resultado = MessageBox.Show("¿Seguro que desea eliminarlo?","Eliminando Articulo",MessageBoxButtons.YesNo,MessageBoxIcon.Warning);
+                
+                if (resultado == DialogResult.Yes)
+                {
+
+                seleccionado = (Articulo)dgvArticulos.CurrentRow.DataBoundItem;
+                ArticuloEliminado.Eliminar(seleccionado.Id);
+                Cargardgv();
+
+                }
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.ToString());
+            }
+        }
+
+        private void btnFiltrorapido_Click(object sender, EventArgs e)
+        {
+            List<Articulo> listaFiltrada;
+            string filtro = txtFiltroRapido.Text;
+
+            if (filtro != "")
+            {
+                listaFiltrada = listaArticulos.FindAll(valor => valor.Nombre.ToUpper().Contains(filtro.ToUpper()) || valor.Marca.Descripcion.ToUpper().Contains(filtro.ToUpper()) || valor.Codigo.ToUpper().Contains(filtro.ToUpper()));
+            }
+            else
+            {
+                listaFiltrada = listaArticulos;
+            }
+            dgvArticulos.DataSource = null;
+            dgvArticulos.DataSource = listaFiltrada;
+            OcultarColumnas();
         }
     }
 }
