@@ -7,14 +7,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Configuration;
 using dominio;
 using negocio;
+using System.IO;
 
 namespace Presentacion
 {
     public partial class frmAltaArticulo : Form
     {
         private Articulo articulo = null;
+        private OpenFileDialog archivo = null;
         public frmAltaArticulo()
         {
             InitializeComponent();
@@ -31,7 +34,15 @@ namespace Presentacion
         {
             this.Close();
         }
-
+        private bool SoloNumeros(string cadena)
+        {
+            foreach (char caracter in cadena)
+            {
+                if (!(char.IsNumber(caracter) || !(char.IsPunctuation(caracter))))
+                    return false;
+            }
+            return true;
+        }
         private void btnAceptar_Click(object sender, EventArgs e)
         {
           
@@ -50,11 +61,17 @@ namespace Presentacion
                 articulo.UrlImagen = txtUrlImagen.Text;
                 articulo.Precio = decimal.Parse(txtPrecio.Text);
                 articulo.Marca = (Marca)cboMarca.SelectedItem;
-                articulo.Categoria = (Categoria)cboCategoria.SelectedItem;
+                articulo.Categoria = (Categoria)cboCategoria.SelectedItem;                    
+                    
+                }
+                
+                if ((SoloNumeros(txtPrecio.Text)))
+                {
+                    MessageBox.Show("Debe ingrese solo números en el precio del artículo");
 
                 }
-                            
-                if(articulo.Id != 0)
+
+                if (articulo.Id != 0)
                 {
                     negocio.Modificar(articulo);
                     MessageBox.Show("Modificado Exitosamente");
@@ -66,6 +83,9 @@ namespace Presentacion
 
                 }
 
+                if (archivo != null && !(txtUrlImagen.Text.ToUpper().Contains("HTTP")))  
+                    File.Copy(archivo.FileName, ConfigurationManager.AppSettings["ImagenesArticulos"] + archivo.SafeFileName);
+                
                 Close();
 
 
@@ -73,13 +93,30 @@ namespace Presentacion
             catch (Exception ex)
             {
 
-                MessageBox.Show(ex.ToString());
+                MessageBox.Show("Debe ingrese solo números en el precio del artículo");
             }
 
         }
+        private void ValidarTxt()
+        {
+            var texto = !string.IsNullOrEmpty(txtCodigo.Text) && !string.IsNullOrEmpty(txtNombre.Text) && !string.IsNullOrEmpty(txtPrecio.Text);
+            btnAceptar.Enabled = texto;
 
+            var Codigo = string.IsNullOrEmpty(txtCodigo.Text); 
+            lblncod.Visible = Codigo;
+                
+            var Nombre = string.IsNullOrEmpty(txtNombre.Text);
+            lblnNombre.Visible = Nombre;
+            
+            var Precio = string.IsNullOrEmpty(txtPrecio.Text);
+            lblnPrecio.Visible = Precio;               
+            
+        }
         private void frmAltaArticulo_Load(object sender, EventArgs e)
         {
+            btnAceptar.Enabled = false;
+            
+            
             MarcaNegocio marcanegocio = new MarcaNegocio();
             CategoriaNegocio categorianegocio = new CategoriaNegocio();
             try
@@ -129,6 +166,36 @@ namespace Presentacion
         private void txtUrlImagen_Leave(object sender, EventArgs e)
         {
             CargarImagen(txtUrlImagen.Text);
+        }
+
+        private void btnAgregarImagen_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog archivo = new OpenFileDialog();
+            archivo.Filter = "jpg|*jpg|png|*png";
+          
+            if(archivo.ShowDialog() == DialogResult.OK)
+            {
+                txtUrlImagen.Text = archivo.FileName;
+                CargarImagen(archivo.FileName);
+                
+            }
+
+            //File.Copy(archivo.FileName, ConfigurationManager.AppSettings["ImagenesArticulos"] + archivo.SafeFileName);
+        }
+
+        private void txtCodigo_TextChanged(object sender, EventArgs e)
+        {
+            ValidarTxt();
+        }
+
+        private void txtNombre_TextChanged(object sender, EventArgs e)
+        {                 
+            ValidarTxt();
+        }
+
+        private void txtPrecio_TextChanged(object sender, EventArgs e)
+        {
+            ValidarTxt();
         }
     }
 }
