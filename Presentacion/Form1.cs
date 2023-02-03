@@ -22,7 +22,7 @@ namespace Presentacion
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            
+            lblFecha.Text = DateTime.Now.ToLongDateString();
             Cargardgv();
             cboCampo.Items.Add("Precio");
             cboCampo.Items.Add("Nombre");
@@ -67,6 +67,7 @@ namespace Presentacion
                 dgvArticulos.DataSource = listaArticulos;
                 OcultarColumnas();
                 pbxArticulos.Load(listaArticulos[0].UrlImagen);
+                dgvArticulos.Columns["Precio"].DefaultCellStyle.Format = "0.00";
             }
             catch (Exception ex)
             {
@@ -101,9 +102,18 @@ namespace Presentacion
 
         private void btnAgregar_Click(object sender, EventArgs e)
         {
-            frmAltaArticulo alta = new frmAltaArticulo();
-            alta.ShowDialog();
-            Cargardgv();
+            try
+            {
+                frmAltaArticulo alta = new frmAltaArticulo();
+                alta.ShowDialog();
+                Cargardgv();
+
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.ToString());
+            }
         }
 
         private void btnModificar_Click(object sender, EventArgs e)
@@ -111,8 +121,8 @@ namespace Presentacion
             try
             {
                 if (dgvArticulos.CurrentRow != null)
-                {   
-                    Articulo seleccionado = new Articulo();
+                {
+                    Articulo seleccionado;
                     seleccionado = (Articulo)dgvArticulos.CurrentRow.DataBoundItem;
                     frmAltaArticulo modificar = new frmAltaArticulo(seleccionado);
                     modificar.ShowDialog();
@@ -145,10 +155,10 @@ namespace Presentacion
                 
                     if (resultado == DialogResult.Yes)
                     {
+                        seleccionado = (Articulo)dgvArticulos.CurrentRow.DataBoundItem;
+                        ArticuloEliminado.Eliminar(seleccionado.Id);
+                        Cargardgv();
 
-                    seleccionado = (Articulo)dgvArticulos.CurrentRow.DataBoundItem;
-                    ArticuloEliminado.Eliminar(seleccionado.Id);
-                    Cargardgv();
                     }
                 }
                

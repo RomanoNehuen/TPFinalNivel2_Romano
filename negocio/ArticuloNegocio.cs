@@ -31,19 +31,29 @@ namespace negocio
                 while (lector.Read())
                 {
                     Articulo aux = new Articulo();
-                    aux.Id = (int)lector["Id"];
+                    
+                    if (!(lector["Id"] is DBNull))
+                        aux.Id = (int)lector["Id"];
+                    
                     aux.Codigo = (string) lector["Codigo"];
                     aux.Nombre = (string)lector["Nombre"];
                     aux.Descripcion = (string)lector["Descripcion"];
                     aux.UrlImagen = (string)lector["ImagenUrl"];
                     aux.Precio = (decimal)lector["Precio"];
 
+                    
                     aux.Marca = new Marca();
-                    aux.Marca.Id = (int)lector["IdMarca"];
+                    
+                    if (!(lector["IdMarca"] is DBNull))
+                        aux.Marca.Id = (int)lector["IdMarca"];
+                    
                     aux.Marca.Descripcion = (string)lector["Marca"];
 
                     aux.Categoria = new Categoria();
-                    aux.Categoria.Id = (int)lector["IdCategoria"];
+                    
+                    if (!(lector["IdCategoria"] is DBNull))
+                        aux.Categoria.Id = (int)lector["IdCategoria"];
+                    
                     aux.Categoria.Descripcion = (string)lector["Categoria"];
 
                     lista.Add(aux);
@@ -65,7 +75,7 @@ namespace negocio
             AccesoDatos datos = new AccesoDatos();
             try
             {
-                datos.SetearConsulta("insert into ARTICULOS (Codigo,Nombre,Descripcion,ImagenUrl,Precio,IdMarca,IdCategoria) values (@Codigo,@Nombre,@Descripcion,@ImagenUrl,@Precio,@IdMarca, @IdCategoria)");
+                datos.SetearConsulta("insert into ARTICULOS (Codigo,Nombre,Descripcion,ImagenUrl,Precio,IdMarca,IdCategoria) values (@Codigo,@Nombre,@Descripcion,@ImagenUrl,@Precio,@IdMarca,@IdCategoria)");
                 datos.SetearParametro("@Codigo", nuevo.Codigo);
                 datos.SetearParametro("@Nombre", nuevo.Nombre);
                 datos.SetearParametro("@Descripcion", nuevo.Descripcion);
@@ -91,19 +101,21 @@ namespace negocio
         public void Modificar(Articulo articulo)
         {
             AccesoDatos datos = new AccesoDatos();
+            
             try
             {
-            datos.SetearConsulta("update ARTICULOS set Codigo = @Codigo, Nombre = @Nombre, Descripcion = @Descripcion, ImagenUrl = @ImagenUrl, Precio = @Precio, IdMarca = @IdMarca, IdCategoria = @IdCategoria where Id = @Id");
-            datos.SetearParametro("@Codigo", articulo.Codigo);
-            datos.SetearParametro("@Nombre", articulo.Nombre);
-            datos.SetearParametro("@Descripcion", articulo.Descripcion);
-            datos.SetearParametro("@ImagenUrl", articulo.UrlImagen);
-            datos.SetearParametro("@Precio", articulo.Precio);
-            datos.SetearParametro("@IdMarca", articulo.Marca.Id);
-            datos.SetearParametro("@IdCategoria", articulo.Categoria.Id);
-            datos.SetearParametro("@Id", articulo.Id);
+               
+                datos.SetearConsulta("update ARTICULOS set Codigo = @Codigo, Nombre = @Nombre, Descripcion = @Descripcion, ImagenUrl = @ImagenUrl, Precio = @Precio, IdMarca = @IdMarca, IdCategoria = @IdCategoria where Id = @Id");
+                datos.SetearParametro("@Codigo", articulo.Codigo);
+                datos.SetearParametro("@Nombre", articulo.Nombre);
+                datos.SetearParametro("@Descripcion", articulo.Descripcion);
+                datos.SetearParametro("@ImagenUrl", articulo.UrlImagen);
+                datos.SetearParametro("@Precio", articulo.Precio);
+                datos.SetearParametro("@IdMarca", articulo.Marca.Id);
+                datos.SetearParametro("@IdCategoria", articulo.Categoria.Id);
+                datos.SetearParametro("@Id", articulo.Id);
 
-            datos.EjecutarAccion();
+                datos.EjecutarAccion();
 
             }
             catch (Exception ex)
@@ -211,10 +223,10 @@ namespace negocio
         {
             try
             {
-            AccesoDatos datos = new AccesoDatos();
-            datos.SetearConsulta("Delete from ARTICULOS where Id = @Id");
-            datos.SetearParametro("@Id", id);
-            datos.EjecutarAccion();
+                AccesoDatos datos = new AccesoDatos();
+                datos.SetearConsulta("Delete from ARTICULOS where Id = @Id");
+                datos.SetearParametro("@Id", id);
+                datos.EjecutarAccion();
 
 
             }

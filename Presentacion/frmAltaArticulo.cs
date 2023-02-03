@@ -34,57 +34,50 @@ namespace Presentacion
         {
             this.Close();
         }
-        private bool SoloNumeros(string cadena)
-        {
-            foreach (char caracter in cadena)
-            {
-                if (!(char.IsNumber(caracter) || !(char.IsPunctuation(caracter))))
-                    return false;
-            }
-            return true;
-        }
+       
         private void btnAceptar_Click(object sender, EventArgs e)
         {
           
             ArticuloNegocio negocio = new ArticuloNegocio();
            
             try
-            {             
-                if(articulo == null)
-                
-                {
-                articulo = new Articulo();
+            {
+               
+                if (articulo == null)                              
+                    articulo = new Articulo();
 
-                articulo.Codigo = txtCodigo.Text;
-                articulo.Nombre = txtNombre.Text;
-                articulo. Descripcion = TxtDescripcion.Text;
-                articulo.UrlImagen = txtUrlImagen.Text;
-                articulo.Precio = decimal.Parse(txtPrecio.Text);
-                articulo.Marca = (Marca)cboMarca.SelectedItem;
-                articulo.Categoria = (Categoria)cboCategoria.SelectedItem;                    
+                    articulo.Codigo = txtCodigo.Text;
+                    articulo.Nombre = txtNombre.Text;
+                    articulo. Descripcion = TxtDescripcion.Text;
+                    articulo.UrlImagen = txtUrlImagen.Text;
+                    articulo.Precio = decimal.Parse(txtPrecio.Text);
+                    articulo.Marca = (Marca)cboMarca.SelectedItem;
+                    articulo.Categoria = (Categoria)cboCategoria.SelectedItem;                    
                     
-                }
+                               
+                              
                 
-                if ((SoloNumeros(txtPrecio.Text)))
-                {
-                    MessageBox.Show("Debe ingrese solo números en el precio del artículo");
-
-                }
-
                 if (articulo.Id != 0)
-                {
-                    negocio.Modificar(articulo);
-                    MessageBox.Show("Modificado Exitosamente");
+                {                  
+                        negocio.Modificar(articulo);
+                        MessageBox.Show("Modificado Exitosamente");
+                   
                 }
                 else
-                {
-                    negocio.agregar(articulo);
-                    MessageBox.Show("Agregado exitosamente");
-
+                {                   
+                        negocio.agregar(articulo);
+                        MessageBox.Show("Agregado exitosamente");
+                 
                 }
 
-                if (archivo != null && !(txtUrlImagen.Text.ToUpper().Contains("HTTP")))  
-                    File.Copy(archivo.FileName, ConfigurationManager.AppSettings["ImagenesArticulos"] + archivo.SafeFileName);
+                if (archivo != null && !(txtUrlImagen.Text.ToUpper().Contains("HTTP")))
+                {
+                    string NuevaImagen = archivo.FileName;
+                    
+                    if (!(File.Exists(NuevaImagen)))                  
+                        File.Copy(archivo.FileName, ConfigurationManager.AppSettings["images-folder"] + archivo.SafeFileName);                   
+                }
+
                 
                 Close();
 
@@ -93,10 +86,11 @@ namespace Presentacion
             catch (Exception ex)
             {
 
-                MessageBox.Show("Debe ingrese solo números en el precio del artículo");
+                MessageBox.Show(ex.ToString());
             }
 
         }
+        
         private void ValidarTxt()
         {
             var texto = !string.IsNullOrEmpty(txtCodigo.Text) && !string.IsNullOrEmpty(txtNombre.Text) && !string.IsNullOrEmpty(txtPrecio.Text);
@@ -109,8 +103,8 @@ namespace Presentacion
             lblnNombre.Visible = Nombre;
             
             var Precio = string.IsNullOrEmpty(txtPrecio.Text);
-            lblnPrecio.Visible = Precio;               
-            
+            lblnPrecio.Visible = Precio;
+           
         }
         private void frmAltaArticulo_Load(object sender, EventArgs e)
         {
@@ -129,7 +123,7 @@ namespace Presentacion
                 cboCategoria.DisplayMember = "Descripcion";
 
                 if(articulo != null)
-                {
+                {   
                     txtCodigo.Text = articulo.Codigo.ToString();
                     txtNombre.Text = articulo.Nombre;
                     txtPrecio.Text = articulo.Precio.ToString("0.00");
@@ -145,7 +139,7 @@ namespace Presentacion
             catch (Exception ex)
             {
 
-                throw ex;
+                MessageBox.Show(ex.ToString());
             }
         }
 
@@ -170,17 +164,16 @@ namespace Presentacion
 
         private void btnAgregarImagen_Click(object sender, EventArgs e)
         {
-            OpenFileDialog archivo = new OpenFileDialog();
+            archivo = new OpenFileDialog();
             archivo.Filter = "jpg|*jpg|png|*png";
           
             if(archivo.ShowDialog() == DialogResult.OK)
             {
                 txtUrlImagen.Text = archivo.FileName;
-                CargarImagen(archivo.FileName);
+                CargarImagen(archivo.FileName);                     
                 
             }
 
-            //File.Copy(archivo.FileName, ConfigurationManager.AppSettings["ImagenesArticulos"] + archivo.SafeFileName);
         }
 
         private void txtCodigo_TextChanged(object sender, EventArgs e)
@@ -196,6 +189,19 @@ namespace Presentacion
         private void txtPrecio_TextChanged(object sender, EventArgs e)
         {
             ValidarTxt();
+            
+        }
+
+        private void txtPrecio_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsNumber(e.KeyChar) && (e.KeyChar != (char)Keys.Back) && (e.KeyChar != '.'))
+            {
+                e.Handled = true;
+            }
+            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+            {
+                e.Handled = true;
+            }
         }
     }
 }
